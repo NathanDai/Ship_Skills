@@ -1,5 +1,5 @@
 ---
-name: weather
+name: weather-scraper
 description: Query current weather for a specific city
 ---
 
