@@ -34,6 +34,10 @@ def get_ship_details(imo):
         "ais_type": None,
         "mmsi": None,
         "call_sign": None,
+        "destination": None,
+        "eta": None,
+        "last_port": None,
+        "atd": None,
     }
 
     # Extract Name
@@ -50,6 +54,55 @@ def get_ship_details(imo):
             parts = title_text.split(",")
             if parts:
                 ship_data["name"] = parts[0].strip()
+
+    # Extract Voyage Data (Destination, ETA, Last Port, ATD)
+    voyage_rows = soup.find_all("div", class_="vi__r1")
+    for row in voyage_rows:
+        label_div = row.find("div", class_="vilabel")
+        if not label_div:
+            continue
+
+        label_text = label_div.text.strip().lower()
+
+        # Destination & ETA
+        if "destination" in label_text:
+            dest_elem = row.find("a", class_="_npNa")
+            if dest_elem:
+                ship_data["destination"] = dest_elem.text.strip()
+
+            eta_elem = row.find("div", class_="_value")
+            if eta_elem:
+                eta_span = eta_elem.find("span", class_="_mcol12")
+                if eta_span:
+                    eta_text = eta_span.text.strip()
+                    if eta_text.upper().startswith("ETA:"):
+                        ship_data["eta"] = eta_text[4:].strip()
+                    else:
+                        ship_data["eta"] = eta_text
+
+        # Last Port & ATD
+        elif "last port" in label_text:
+            port_elem = row.find("a", class_="_npNa")
+            if port_elem:
+                ship_data["last_port"] = port_elem.text.strip()
+
+            atd_elem = row.find("div", class_="_value")
+            if atd_elem:
+                # The text might contain "ATD: Feb 11, 03:28 UTC" and a span like "(1 day ago)"
+                # We want just the text before the span, or the full text minus known prefixes
+                # Let's get the full text first
+                full_atd_text = atd_elem.get_text(
+                    " ", strip=True
+                )  # "ATD: Feb 11, 03:28 UTC (1 day ago)"
+
+                # Check for "ATD:" prefix
+                if "ATD:" in full_atd_text:
+                    # simplistic parsing: split by "ATD:" and take the second part
+                    atd_val = full_atd_text.split("ATD:")[1].strip()
+                    # Remove the relative time in parens if present, e.g. "(1 day ago)"
+                    if "(" in atd_val:
+                        atd_val = atd_val.split("(")[0].strip()
+                    ship_data["atd"] = atd_val
 
     # Parsers for the "Vessel Particulars" section
     # This section usually contains a table with keys and values
@@ -130,10 +183,37 @@ def get_ship_details(imo):
     # But we can verify if "imo / mmsi" contains it.
 
     # Filter out empty, None, or restricted ("-") values and return
+    # final_ship_data = {
+    #     k: v
+    #     for k, v in ship_data.items()
+    #     if v is not None and v != "-" and (isinstance(v, str) and v.strip() != "" or not isinstance(v, str))
+    # }
+
+    # User requested strict output format + voyage data
+    allowed_keys = {
+        "imo",
+        "name",
+        "vessel_type",
+        "flag",
+        "gross_tonnage",
+        "summer_deadweight",
+        "length_overall",
+        "beam",
+        "year_of_built",
+        "ais_type",
+        "mmsi",
+        "call_sign",
+        "destination",
+        "eta",
+        "last_port",
+        "atd",
+    }
+
     final_ship_data = {
         k: v
         for k, v in ship_data.items()
-        if v is not None
+        if k in allowed_keys
+        and v
         and v != "-"
         and (isinstance(v, str) and v.strip() != "" or not isinstance(v, str))
     }
