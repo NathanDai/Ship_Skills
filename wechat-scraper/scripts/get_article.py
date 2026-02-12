@@ -1,41 +1,48 @@
-import requests
-from bs4 import BeautifulSoup
-import sys
+import asyncio
 import json
+import argparse
+import sys
+from utils.api_client import get_article_html
+from utils.formatters import parse_article
+from utils.errors import WeChatParserError, InvalidURLError
 
 
-def get_wechat_article_soup(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-    }
-    html = requests.get(url, headers=headers, timeout=15).text
-    soup = BeautifulSoup(html, "html.parser")
-    return soup
+async def main():
+    parser = argparse.ArgumentParser(description="Fetch and parse WeChat articles.")
+    parser.add_argument("url", help="The URL of the WeChat article.")
+    args = parser.parse_args()
 
-
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python3 get_article.py <URL>")
+    # Validate URL
+    if not (
+        args.url.startswith("http://mp.weixin.qq.com/s/")
+        or args.url.startswith("https://mp.weixin.qq.com/s/")
+    ):
+        print(f"Error: {InvalidURLError().message}")
+        print(f"Suggestion: {InvalidURLError().suggestion}")
         sys.exit(1)
 
-    url = sys.argv[1]
     try:
-        soup = get_wechat_article_soup(url)
-        title_tag = soup.find("h1", class_="rich_media_title")
-        content_tag = soup.find("div", class_="rich_media_content")
+        # 1. Get HTML content
+        html_content = await get_article_html(args.url)
 
-        result = {
-            "title": title_tag.get_text().strip() if title_tag else None,
-            "content": content_tag.get_text().strip() if content_tag else None,
-        }
+        # 2. Parse title and content
+        title, content = parse_article(html_content)
 
-        print(json.dumps(result, ensure_ascii=False))
+        # 3. Format response
+        response_data = {"title": title, "content": content}
 
+        # Output JSON to stdout
+        print(json.dumps(response_data, ensure_ascii=False, indent=2))
+
+    except WeChatParserError as e:
+        print(f"Error: {e}")
+        if e.suggestion:
+            print(f"Suggestion: {e.suggestion}")
+        sys.exit(1)
     except Exception as e:
-        print(f"Error fetching article: {e}")
+        print(f"An unexpected error occurred: {str(e)}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
