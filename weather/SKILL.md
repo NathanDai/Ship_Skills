@@ -21,13 +21,13 @@ You can use the python script directly from the command line.
 Run the script with the city name as an argument:
 
 ```bash
-python3 scripts/weather_skill.py <city_name>
+python3 scripts/get_weather.py <city_name>
 ```
 
 **Example:**
 
 ```bash
-python3 scripts/weather_skill.py Beijing
+python3 scripts/get_weather.py Beijing
 ```
 
 ## Output
