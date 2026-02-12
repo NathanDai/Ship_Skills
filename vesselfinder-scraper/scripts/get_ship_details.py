@@ -20,7 +20,7 @@ def get_ship_details(imo):
 
     soup = BeautifulSoup(response.content, "html.parser")
 
-    # Default values
+    # 默认值
     ship_data = {
         "imo": imo,
         "name": None,
@@ -40,14 +40,14 @@ def get_ship_details(imo):
         "atd": None,
     }
 
-    # Extract Name
+    # 提取名称
     title_section = soup.find("h1", class_="title")
     if title_section:
         ship_data["name"] = title_section.text.strip()
 
-    # If name not found in h1, try to find it in the breadcrumb or other places
+    # 如果 h1 中没找到名称，尝试在面包屑或其他地方查找
     if not ship_data["name"]:
-        # Fallback to page title
+        # 回退到页面标题
         if soup.title:
             title_text = soup.title.text
             # Title format: "SHIP NAME, Ship Type - Details and current position - IMO 1234567 - VesselFinder"
@@ -55,7 +55,7 @@ def get_ship_details(imo):
             if parts:
                 ship_data["name"] = parts[0].strip()
 
-    # Extract Voyage Data (Destination, ETA, Last Port, ATD)
+    # 提取航次数据（目的地、ETA、上一港口、ATD）
     voyage_rows = soup.find_all("div", class_="vi__r1")
     for row in voyage_rows:
         label_div = row.find("div", class_="vilabel")
@@ -64,7 +64,7 @@ def get_ship_details(imo):
 
         label_text = label_div.text.strip().lower()
 
-        # Destination & ETA
+        # 目的地 & ETA
         if "destination" in label_text:
             dest_elem = row.find("a", class_="_npNa")
             if dest_elem:
@@ -80,7 +80,7 @@ def get_ship_details(imo):
                     else:
                         ship_data["eta"] = eta_text
 
-        # Last Port & ATD
+        # 上一港口 & ATD
         elif "last port" in label_text:
             port_elem = row.find("a", class_="_npNa")
             if port_elem:
@@ -88,30 +88,30 @@ def get_ship_details(imo):
 
             atd_elem = row.find("div", class_="_value")
             if atd_elem:
-                # The text might contain "ATD: Feb 11, 03:28 UTC" and a span like "(1 day ago)"
-                # We want just the text before the span, or the full text minus known prefixes
-                # Let's get the full text first
+                # 文本可能包含 "ATD: Feb 11, 03:28 UTC" 和一个类似 "(1 day ago)" 的 span
+                # 我们只需要 span 之前的文本，或者去掉已知前缀的完整文本
+                # 先获取完整文本
                 full_atd_text = atd_elem.get_text(
                     " ", strip=True
                 )  # "ATD: Feb 11, 03:28 UTC (1 day ago)"
 
-                # Check for "ATD:" prefix
+                # 检查 "ATD:" 前缀
                 if "ATD:" in full_atd_text:
-                    # simplistic parsing: split by "ATD:" and take the second part
+                    # 简单解析：按 "ATD:" 分割并取第二部分
                     atd_val = full_atd_text.split("ATD:")[1].strip()
-                    # Remove the relative time in parens if present, e.g. "(1 day ago)"
+                    # 如果存在，移除括号中的相对时间，例如 "(1 day ago)"
                     if "(" in atd_val:
                         atd_val = atd_val.split("(")[0].strip()
                     ship_data["atd"] = atd_val
 
-    # Parsers for the "Vessel Particulars" section
-    # This section usually contains a table with keys and values
-    # Based on observation, keys are often in 'td.tpc1' or similar, values in 'td.txv' or 'td.tpc2'
-    # Use a generic approach to find the table rows and map keys to our fields
+    # "船舶详细信息" 部分的解析器
+    # 该部分通常包含一个带有键和值的表格
+    # 根据观察，键通常在 'td.tpc1' 或类似元素中，值在 'td.txv' 或 'td.tpc2' 中
+    # 使用通用方法查找表格行并将键映射到我们的字段
 
     technical_specs = {}
 
-    # Look for all tables and rows
+    # 查找所有表格和行
     rows = soup.find_all("tr")
     for row in rows:
         cols = row.find_all("td")
@@ -120,10 +120,10 @@ def get_ship_details(imo):
             value = cols[1].text.strip()
             technical_specs[key] = value
 
-    # Map extracted specs to our ship_data
-    # Common keys: "imo / mmsi", "call sign", "flag", "gross tonnage", "summer deadweight (t)", "length overall (m) / beam (m)", "year of built", "vessel type"
+    # 将提取的规格映射到我们的 ship_data
+    # 常见键: "imo / mmsi", "call sign", "flag", "gross tonnage", "summer deadweight (t)", "length overall (m) / beam (m)", "year of built", "vessel type"
 
-    # Debug: print found keys
+    # 调试: 打印找到的键
     # print(f"Found keys: {list(technical_specs.keys())}", file=sys.stderr)
 
     # Vessel Type
@@ -178,9 +178,9 @@ def get_ship_details(imo):
     # AIS Info
     ship_data["ais_type"] = technical_specs.get("ais type")
 
-    # Correction: IMO is often part of a combined field or separate.
-    # Since we passed IMO, we keep it.
-    # But we can verify if "imo / mmsi" contains it.
+    # 修正: IMO 通常是组合字段的一部分或单独存在。
+    # 因为我们传递了 IMO，所以保留它。
+    # 但我们可以验证 "imo / mmsi" 是否包含它。
 
     # Filter out empty, None, or restricted ("-") values and return
     # final_ship_data = {
@@ -189,7 +189,7 @@ def get_ship_details(imo):
     #     if v is not None and v != "-" and (isinstance(v, str) and v.strip() != "" or not isinstance(v, str))
     # }
 
-    # User requested strict output format + voyage data
+    # 用户请求严格的输出格式 + 航次数据
     allowed_keys = {
         "imo",
         "name",
@@ -222,8 +222,8 @@ def get_ship_details(imo):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch ship details from VesselFinder")
-    parser.add_argument("imo", help="The IMO number of the ship")
+    parser = argparse.ArgumentParser(description="从 VesselFinder 获取船舶详情")
+    parser.add_argument("imo", help="船舶的 IMO 编号")
     args = parser.parse_args()
 
     data = get_ship_details(args.imo)

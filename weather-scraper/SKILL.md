@@ -1,40 +1,40 @@
 ---
-name: weather-scraper
-description: Query current weather for a specific city
+name: 天气爬虫
+description: 查询特定城市的当前天气
 ---
 
-# Weather Skill
+# 天气技能
 
-This skill allows you to query the current weather conditions for a specified city.
+此技能允许您查询指定城市的当前天气状况。
 
-## Usage
+## 使用方法
 
-You can use the python script directly from the command line.
+您可以直接从命令行使用 Python 脚本。
 
-### Prerequisites
+### 先决条件
 
 - Python 3.7+
-- `httpx` library installed (`pip install httpx`)
+- 安装 `httpx` 库 (`pip install httpx`)
 
-### Commands
+### 命令
 
-Run the script with the city name as an argument:
+运行脚本，并将城市名称作为参数：
 
 ```bash
 python3 scripts/get_weather.py <city_name>
 ```
 
-**Example:**
+**示例：**
 
 ```bash
 python3 scripts/get_weather.py Beijing
 ```
 
-## Output
+## 输出
 
-The script returns a JSON-like dictionary containing:
-- City name
-- Temperature (°C)
-- Weather description
-- Humidity
-- Wind speed
+脚本返回一个类似 JSON 的字典，包含：
+- 城市名称
+- 温度 (°C)
+- 天气描述
+- 湿度
+- 风速

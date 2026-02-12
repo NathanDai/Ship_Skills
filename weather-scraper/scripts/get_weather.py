@@ -59,10 +59,8 @@ if __name__ == "__main__":
     import json
 
     async def main():
-        parser = argparse.ArgumentParser(
-            description="Query weather for a specific city."
-        )
-        parser.add_argument("city", type=str, help="Name of the city to query")
+        parser = argparse.ArgumentParser(description="查询特定城市的天气。")
+        parser.add_argument("city", type=str, help="要查询的城市名称")
         args = parser.parse_args()
 
         skill = WeatherSkill()
