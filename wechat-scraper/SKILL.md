@@ -1,39 +1,39 @@
 ---
-name: WeChat Article Scraper
-description: Extract content from WeChat articles using a URL.
+name: 微信公众号文章爬虫
+description: 使用 URL 提取微信公众号文章内容。
 ---
 
-# WeChat Article Scraper Skill
+# 微信公众号文章爬虫技能
 
-This skill allows you to extract content from WeChat articles using their URL.
+此技能允许您使用 URL 提取微信公众号文章的内容。
 
-## Usage
+## 使用方法
 
-The skill provides a Python script `scripts/get_article.py` that takes a WeChat article URL as an argument and outputs the article's title and a preview of its content.
+该技能提供了一个 Python 脚本 `scripts/get_article.py`，它接受微信公众号文章 URL 作为参数，并输出文章的标题和内容预览。
 
-### Command
+### 命令
 
 ```bash
 python3 scripts/get_article.py <URL>
 ```
 
-### Example
+### 示例
 
 ```bash
 python3 scripts/get_article.py https://mp.weixin.qq.com/s/EwhrQgyZIVpk78IN8bNhFw
 ```
 
-### Output Format
+### 输出格式
 
-The output will print the title of the article and a preview of the content to the console.
+输出将在控制台中打印文章的标题和内容预览。
 
-### Dependencies
+### 依赖项
 
 - python3
 - requests
 - beautifulsoup4
 
-To install dependencies:
+安装依赖项：
 
 ```bash
 pip install requests beautifulsoup4

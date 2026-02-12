@@ -8,11 +8,11 @@ from utils.errors import WeChatParserError, InvalidURLError
 
 
 async def main():
-    parser = argparse.ArgumentParser(description="Fetch and parse WeChat articles.")
-    parser.add_argument("url", help="The URL of the WeChat article.")
+    parser = argparse.ArgumentParser(description="获取并解析微信文章。")
+    parser.add_argument("url", help="微信文章的 URL。")
     args = parser.parse_args()
 
-    # Validate URL
+    # 验证 URL
     if not (
         args.url.startswith("http://mp.weixin.qq.com/s/")
         or args.url.startswith("https://mp.weixin.qq.com/s/")
@@ -22,16 +22,16 @@ async def main():
         sys.exit(1)
 
     try:
-        # 1. Get HTML content
+        # 1. 获取 HTML 内容
         html_content = await get_article_html(args.url)
 
-        # 2. Parse title and content
+        # 2. 解析标题和内容
         title, content = parse_article(html_content)
 
-        # 3. Format response
+        # 3. 格式化响应
         response_data = {"title": title, "content": content}
 
-        # Output JSON to stdout
+        # 输出 JSON 到标准输出
         print(json.dumps(response_data, ensure_ascii=False, indent=2))
 
     except WeChatParserError as e:

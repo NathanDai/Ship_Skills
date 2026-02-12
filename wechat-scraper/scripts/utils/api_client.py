@@ -6,16 +6,16 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 async def get_article_html(url: str) -> str:
     """
-    Fetches the HTML content of a given URL.
+    获取给定 URL 的 HTML 内容。
 
     Args:
-        url: The URL of the WeChat article.
+        url: 微信文章的 URL。
 
     Returns:
-        The HTML content of the page as a string.
+        作为字符串的页面 HTML 内容。
 
     Raises:
-        RequestFailedError: If the HTTP request fails.
+        RequestFailedError: 如果 HTTP 请求失败。
     """
     headers = {"User-Agent": USER_AGENT}
     async with httpx.AsyncClient() as client:
@@ -28,5 +28,5 @@ async def get_article_html(url: str) -> str:
         except httpx.HTTPStatusError as e:
             raise RequestFailedError(status_code=e.response.status_code)
         except httpx.RequestError as e:
-            # Pass 0 or appropriate code for network errors
+            # 传递 0 或适当的网络错误代码
             raise RequestFailedError(status_code=0) from e
