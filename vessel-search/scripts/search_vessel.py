@@ -25,6 +25,6 @@ if __name__ == "__main__":
 
     result = search_vessel(args.vessel_name)
     if result:
-        print(json.dumps(result, indent=2, ensure_ascii=False))
+        print(json.dumps(result.get("data", []), indent=2, ensure_ascii=False))
     else:
         sys.exit(1)
