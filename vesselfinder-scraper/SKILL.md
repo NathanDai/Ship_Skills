@@ -1,6 +1,6 @@
 ---
 name: Vesselfinder Ship Details
-description: Extract ship details (Name, Type, Flag, GT, DWT, etc.) from Vesselfinder using IMO number.
+description: Extract specific ship details (Name, Type, Flag, Dimensions, Tonnages, Owner, etc.) from Vesselfinder using IMO number.
 ---
 
 # Vesselfinder Ship Details Skill
@@ -25,16 +25,22 @@ python3 scripts/get_ship_details.py 9648714
 
 ### Output Format
 
-The output is a JSON object with the following fields:
+The output is a JSON object containing **only the available fields** from the following allowed list:
 
 - `imo`: The IMO number of the ship.
 - `name`: The name of the ship.
-- `vessel_type`: Type of the vessel (e.g., "Offshore Support Vessel").
+- `vessel_type`: Type of the vessel.
 - `flag`: The flag under which the ship sails.
+- `mmsi`: Maritime Mobile Service Identity.
+- `call_sign`: Call Sign.
+- `ais_type`: AIS Vessel Type.
 - `gross_tonnage`: Gross Tonnage.
 - `summer_deadweight`: Summer Deadweight in tonnes.
 - `length_overall`: Length Overall in meters.
+- `beam`: Beam in meters.
 - `year_of_built`: Year the ship was built.
+
+**Note:** Fields that are empty, null, or restricted (marked with `-`) are omitted from the output.
 
 ### Dependencies
 

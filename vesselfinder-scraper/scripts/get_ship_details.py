@@ -29,7 +29,11 @@ def get_ship_details(imo):
         "gross_tonnage": None,
         "summer_deadweight": None,
         "length_overall": None,
+        "beam": None,
         "year_of_built": None,
+        "ais_type": None,
+        "mmsi": None,
+        "call_sign": None,
     }
 
     # Extract Name
@@ -70,16 +74,32 @@ def get_ship_details(imo):
     # print(f"Found keys: {list(technical_specs.keys())}", file=sys.stderr)
 
     # Vessel Type
-    ship_data["vessel_type"] = technical_specs.get("ship type")
+    ship_data["vessel_type"] = technical_specs.get("ship type") or technical_specs.get(
+        "vessel type"
+    )
 
     # Flag
     ship_data["flag"] = technical_specs.get("flag")
+
+    # MMSI & Call Sign
+    # "imo / mmsi" -> "9333395 / 255806256"
+    imo_mmsi = technical_specs.get("imo / mmsi")
+    if imo_mmsi:
+        parts = imo_mmsi.split("/")
+        if len(parts) > 1:
+            ship_data["mmsi"] = parts[1].strip()
+
+    ship_data["call_sign"] = technical_specs.get("callsign") or technical_specs.get(
+        "call sign"
+    )
 
     # Gross Tonnage
     ship_data["gross_tonnage"] = technical_specs.get("gross tonnage")
 
     # Summer Deadweight
-    ship_data["summer_deadweight"] = technical_specs.get("deadweight (t)")
+    ship_data["summer_deadweight"] = technical_specs.get(
+        "deadweight (t)"
+    ) or technical_specs.get("summer deadweight (t)")
 
     # Length Overall
     if "length overall (m)" in technical_specs:
@@ -89,14 +109,36 @@ def get_ship_details(imo):
             technical_specs.get("length overall (m) / beam (m)").split("/")[0].strip()
         )
 
+    # Beam
+    if "beam (m)" in technical_specs:
+        ship_data["beam"] = technical_specs.get("beam (m)")
+    elif "length overall (m) / beam (m)" in technical_specs:
+        parts = technical_specs.get("length overall (m) / beam (m)").split("/")
+        if len(parts) > 1:
+            ship_data["beam"] = parts[1].strip()
+
     # Year of Built
-    ship_data["year_of_built"] = technical_specs.get("year of build")
+    ship_data["year_of_built"] = technical_specs.get(
+        "year of build"
+    ) or technical_specs.get("year of built")
+
+    # AIS Info
+    ship_data["ais_type"] = technical_specs.get("ais type")
 
     # Correction: IMO is often part of a combined field or separate.
     # Since we passed IMO, we keep it.
     # But we can verify if "imo / mmsi" contains it.
 
-    return ship_data
+    # Filter out empty, None, or restricted ("-") values and return
+    final_ship_data = {
+        k: v
+        for k, v in ship_data.items()
+        if v is not None
+        and v != "-"
+        and (isinstance(v, str) and v.strip() != "" or not isinstance(v, str))
+    }
+
+    return final_ship_data
 
 
 def main():
